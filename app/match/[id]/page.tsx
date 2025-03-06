@@ -1,8 +1,9 @@
-'use client';
-
 import { useState, useEffect } from 'react';
-import React from 'react'; 
-import MatchDetailContent from '@/components/MatchDetailContent';
+import MatchDetailContent from '@/components/MatchDetailContent'; // Adjust path as needed
+
+interface Params {
+  id: string;
+}
 
 interface MatchData {
   matchId: string;
@@ -20,7 +21,8 @@ interface MatchData {
   squads: { team1: string[]; team2: string[] };
 }
 
-export default function MatchPage({ params }: { params: { id: string } }) {
+// Explicitly define the props type to satisfy PageProps
+export default function MatchPage({ params }: { params: Params }) {
   const { id } = params;
   const [matchData, setMatchData] = useState<MatchData | null>(null);
 
