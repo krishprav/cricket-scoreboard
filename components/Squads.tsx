@@ -1,5 +1,5 @@
 'use client';
-
+import { useState } from 'react';
 interface MatchData {
   teams: string;
   score: string;
