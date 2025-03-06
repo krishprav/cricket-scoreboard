@@ -2,9 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
-    formats: ['image/webp'], // Only WebP is supported for optimization
+    formats: ['image/webp'], 
   },
-  headers() {
+  async headers() { 
     return [
       {
         source: '/(.*)',
