@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import MatchCard from '@/components/MatchCard';
 import { useEffect, useState } from 'react';
@@ -14,35 +14,41 @@ interface Match {
   matchInfo: MatchInfo;
 }
 
-export default function Matches() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface MatchesClientProps {
+  initialMatches: Match[];
+  initialError: string | null;
+}
+
+export default function MatchesClient({ initialMatches, initialError }: MatchesClientProps) {
+  const [matches, setMatches] = useState<Match[]>(initialMatches);
+  const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchMatches = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch('https://cricket-backend-efj4.onrender.com/matches', {
           cache: 'no-store',
         });
         if (!response.ok) throw new Error('Failed to fetch matches');
         const data = await response.json();
         const fetchedMatches = Array.isArray(data) ? data.map((item: MatchInfo) => ({ matchInfo: item })) : [];
-        console.log('Fetched matches:', fetchedMatches);
         setMatches(fetchedMatches);
-        if (!fetchedMatches.length) {
-          setErrorMessage('No live matches available at this time.');
-        }
+        setErrorMessage(fetchedMatches.length ? null : 'No live matches available at this time.');
       } catch (error: any) {
-        console.error('Error fetching matches:', error.message);
         setErrorMessage('Failed to load matches. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchMatches();
-  }, []); 
+    if (!initialMatches.length && !initialError) fetchMatches();
+
+    const interval = setInterval(fetchMatches, 30000);
+    return () => clearInterval(interval);
+  }, [initialMatches, initialError]);
 
   return (
     <div className="relative min-h-screen p-6">
