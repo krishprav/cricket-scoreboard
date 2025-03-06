@@ -12,6 +12,7 @@ export default [
     rules: {
       'react/prop-types': 'off',
       '@typescript-eslint/no-unused-vars': ['warn'],
+      'next/no-html-link-for-pages': 'off',
     },
   },
 ];
