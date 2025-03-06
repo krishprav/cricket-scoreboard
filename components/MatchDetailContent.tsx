@@ -36,12 +36,10 @@ interface MatchDetailContentProps {
 export default function MatchDetailContent({ initialData, matchId }: MatchDetailContentProps) {
   const [matchData, setMatchData] = useState<MatchData>(initialData);
   const [celebration, setCelebration] = useState<string | null>(null);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com'; // Fallback
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com';
 
   useEffect(() => {
-    const socket = new WebSocket(
-      `${apiUrl.replace('http', 'ws')}/matches`
-    );
+    const socket = new WebSocket(`${apiUrl.replace('http', 'ws')}/matches`);
     let isMounted = true;
 
     socket.onopen = () => {
@@ -99,9 +97,7 @@ export default function MatchDetailContent({ initialData, matchId }: MatchDetail
                 width={96}
                 height={96}
                 className="mr-8"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = defaultLogo;
-                }}
+                onError={(e) => { (e.target as HTMLImageElement).src = defaultLogo; }}
               />
             </Suspense>
             <div className="text-5xl font-bold text-teal-200 opacity-0 translate-y-20 transition-all duration-800" style={{ opacity: 1, transform: 'translateY(0)' }}>
@@ -114,9 +110,7 @@ export default function MatchDetailContent({ initialData, matchId }: MatchDetail
                 width={96}
                 height={96}
                 className="ml-8"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = defaultLogo;
-                }}
+                onError={(e) => { (e.target as HTMLImageElement).src = defaultLogo; }}
               />
             </Suspense>
           </div>

@@ -1,21 +1,17 @@
 'use client';
+
 import { useState } from 'react';
+
 interface MatchData {
   teams: string;
   score: string;
   event?: string;
-  players?: { name: string; team: string }[];
+  squads: { team1: string[]; team2: string[] };
 }
 
 export default function Squads({ matchData }: { matchData: MatchData }) {
   const [showSquads, setShowSquads] = useState(false);
-  const teams = matchData.teams?.split(' vs ') || ['Wellington', 'Otago'];
-  const team1 = teams[0];
-  const team2 = teams[1];
-  const players = matchData.players || [];
-
-  const team1Players = players.filter(player => player.team === team1);
-  const team2Players = players.filter(player => player.team === team2);
+  const [team1, team2] = matchData.teams.split(' vs ') || ['Unknown', 'Unknown'];
 
   return (
     <div className="glassmorphic p-4 rounded-xl">
@@ -26,11 +22,19 @@ export default function Squads({ matchData }: { matchData: MatchData }) {
         <div>
           <div>
             <h4 className="text-amber-200">{team1}</h4>
-            {team1Players.map((player, i) => <p key={i} className="text-white">{player.name}</p>)}
+            {matchData.squads.team1.length > 0 ? (
+              matchData.squads.team1.map((player, i) => <p key={i} className="text-white">{player}</p>)
+            ) : (
+              <p className="text-gray-400">No players available</p>
+            )}
           </div>
           <div>
             <h4 className="text-amber-200">{team2}</h4>
-            {team2Players.map((player, i) => <p key={i} className="text-white">{player.name}</p>)}
+            {matchData.squads.team2.length > 0 ? (
+              matchData.squads.team2.map((player, i) => <p key={i} className="text-white">{player}</p>)
+            ) : (
+              <p className="text-gray-400">No players available</p>
+            )}
           </div>
         </div>
       )}
