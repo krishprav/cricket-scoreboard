@@ -39,7 +39,7 @@ const defaultMatchData: MatchData = {
   squads: { team1: [], team2: [] }
 };
 
-export default function MatchPage({ params }: { params: Params }) {
+export default function MatchPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
