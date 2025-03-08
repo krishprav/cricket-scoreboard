@@ -1,11 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import MatchDetailContent from '@/components/MatchDetailContent';
-
-interface Params {
-  id: string;
-}
 
 interface MatchData {
   matchId: string;
@@ -39,8 +36,10 @@ const defaultMatchData: MatchData = {
   squads: { team1: [], team2: [] }
 };
 
-export default function MatchPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function MatchPage() {
+  const params = useParams();
+  const id = params.id as string;
+  
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +67,9 @@ export default function MatchPage({ params }: { params: { id: string } }) {
       }
     };
 
-    fetchMatchData();
+    if (id) {
+      fetchMatchData();
+    }
   }, [id]);
 
   if (isLoading) {
