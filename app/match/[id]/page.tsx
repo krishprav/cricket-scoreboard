@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import MatchDetailContent from '@/components/MatchDetailContent'; // Adjust path as needed
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import MatchDetailContent from '@/components/MatchDetailContent';
 
 interface Params {
   id: string;
@@ -21,26 +23,85 @@ interface MatchData {
   squads: { team1: string[]; team2: string[] };
 }
 
-// Explicitly define the props type to satisfy PageProps
+// Create default empty match data to prevent errors
+const defaultMatchData: MatchData = {
+  matchId: '',
+  teams: 'Team 1 vs Team 2',
+  score: 'No score',
+  crr: '0.0',
+  status: 'No status',
+  logos: { team1: '', team2: '' },
+  commentary: [],
+  scorecard: {
+    batting: [],
+    bowling: []
+  },
+  squads: { team1: [], team2: [] }
+};
+
 export default function MatchPage({ params }: { params: Params }) {
   const { id } = params;
   const [matchData, setMatchData] = useState<MatchData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/matches/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then((data: MatchData) => setMatchData(data))
-      .catch((err) => console.error('Fetch error:', err));
+    const fetchMatchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Use the full URL instead of relying on environment variables
+        const response = await fetch(`https://cricket-backend-efj4.onrender.com/matches/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch match data: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setMatchData(data);
+      } catch (err) {
+        console.error('Error fetching match data:', err);
+        setError('Match not found or server error. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMatchData();
   }, [id]);
 
-  if (!matchData) return <div className="text-center text-white text-xl">Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="glassmorphic p-8 rounded-xl text-center">
+          <div className="text-center text-white text-xl">Loading match data...</div>
+        </div>
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="glassmorphic p-8 rounded-xl text-center">
+          <h2 className="text-3xl font-bold text-red-500 mb-4">Error</h2>
+          <p className="text-white mb-6">{error}</p>
+          <a 
+            href="/matches" 
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            Back to Matches
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Use default data if matchData is null
   return (
     <div>
-      <MatchDetailContent initialData={matchData} matchId={id} />
+      <MatchDetailContent initialData={matchData || defaultMatchData} matchId={id} />
     </div>
   );
 }
