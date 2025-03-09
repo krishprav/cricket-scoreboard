@@ -65,73 +65,98 @@ export default function MatchDetails() {
   const wsRef = useRef<WebSocket | null>(null);
   const commentaryEndRef = useRef<HTMLDivElement | null>(null);
 
-// For the WebSocket connections, add this after setting up the ref:
-useEffect(() => {
-  if (!id || typeof window === 'undefined') return;
-
-  try {
-      // First fetch match data from API
+  // Function to fetch match data from API
+  const fetchMatchDataFromAPI = async () => {
+    try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com'}/api/match/${id}`);
-      
-      // After data is fetched, set up WebSocket
-      const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'wss://cricket-backend-efj4.onrender.com'}/ws`);
-      wsRef.current = ws;
-    
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      // Only try to send if we're connected
-      if (ws.readyState === WebSocket.OPEN) {
-        // Subscribe to match updates
-        ws.send(JSON.stringify({
-          action: 'subscribe',
-          matchId: id
-        }));
-        
-        // Subscribe to commentary
-        ws.send(JSON.stringify({
-          action: 'subscribe_commentary',
-          matchId: id
-        }));
+      if (!response.ok) {
+        throw new Error('Failed to fetch match data');
       }
-    };
-    
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'match_update') {
-        setMatchData(data.data);
-        setLoading(false);
-      } else if (data.type === 'commentary_update') {
-        setCommentary(data.data.commentary || []);
-      }
-    };
-    
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setError('Failed to connect to server. Falling back to API...');
-      fetchMatchDataFromAPI();
-    };
-  } catch (err) {
-    console.error('Error setting up WebSocket:', err);
-    setError('Failed to connect to server. Falling back to API...');
-    fetchMatchDataFromAPI();
-  }
-  
-  // Clean up WebSocket on unmount
-  return () => {
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      try {
-        ws.send(JSON.stringify({
-          action: 'unsubscribe',
-          matchId: id
-        }));
-      } catch (e) {
-        console.error('Error sending unsubscribe:', e);
-      }
-      ws.close();
+      const data = await response.json();
+      setMatchData(data);
+      setLoading(false);
+    } catch (err) {
+      console.error('API fetch error:', err);
+      setError('Failed to load match data. Please try again later.');
     }
   };
-}, [id]);
+
+  // For the WebSocket connections, add this after setting up the ref:
+  useEffect(() => {
+    if (!id || typeof window === 'undefined') return;
+    
+    // Define a helper async function to fetch data
+    const setupConnection = async () => {
+      try {
+        // First fetch match data from API
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com'}/api/match/${id}`);
+        const data = await response.json();
+        setMatchData(data);
+        
+        // After data is fetched, set up WebSocket
+        const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'wss://cricket-backend-efj4.onrender.com'}/ws`);
+        wsRef.current = ws;
+        
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          // Only try to send if we're connected
+          if (ws.readyState === WebSocket.OPEN) {
+            // Subscribe to match updates
+            ws.send(JSON.stringify({
+              action: 'subscribe',
+              matchId: id
+            }));
+            
+            // Subscribe to commentary
+            ws.send(JSON.stringify({
+              action: 'subscribe_commentary',
+              matchId: id
+            }));
+          }
+        };
+        
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'match_update') {
+            setMatchData(data.data);
+            setLoading(false);
+          } else if (data.type === 'commentary_update') {
+            setCommentary(data.data.commentary || []);
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setError('Failed to connect to server. Falling back to API...');
+          fetchMatchDataFromAPI();
+        };
+      } catch (err) {
+        console.error('Error setting up WebSocket:', err);
+        setError('Failed to connect to server. Falling back to API...');
+        fetchMatchDataFromAPI();
+      }
+    };
+    
+    // Call the async function
+    setupConnection();
+    
+    // Clean up WebSocket on unmount
+    return () => {
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({
+            action: 'unsubscribe',
+            matchId: id
+          }));
+        } catch (e) {
+          console.error('Error sending unsubscribe:', e);
+        }
+        ws.close();
+      }
+    };
+  }, [id]);
+
   // Scroll to bottom of commentary when new comments arrive
   useEffect(() => {
     if (activeTab === 'commentary' && commentaryEndRef.current) {
@@ -163,7 +188,7 @@ useEffect(() => {
   if (!matchData) return null;
 
   // Helper for team colors
-  const getTeamColor = (teamName) => {
+  const getTeamColor = (teamName: string) => {
     const colorMap = {
       'India': 'bg-blue-600',
       'Australia': 'bg-yellow-500',
