@@ -65,28 +65,34 @@ export default function MatchDetails() {
   const wsRef = useRef<WebSocket | null>(null);
   const commentaryEndRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!id || typeof window === 'undefined') return;
+// For the WebSocket connections, add this after setting up the ref:
+useEffect(() => {
+  if (!id || typeof window === 'undefined') return;
 
+  try {
     // Setup WebSocket connection
-    wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000'}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}`);
+    wsRef.current = ws;
     
-    wsRef.current.onopen = () => {
+    ws.onopen = () => {
       console.log('WebSocket connected');
-      // Subscribe to match updates
-      wsRef.current.send(JSON.stringify({
-        action: 'subscribe',
-        matchId: id
-      }));
-      
-      // Subscribe to commentary
-      wsRef.current.send(JSON.stringify({
-        action: 'subscribe_commentary',
-        matchId: id
-      }));
+      // Only try to send if we're connected
+      if (ws.readyState === WebSocket.OPEN) {
+        // Subscribe to match updates
+        ws.send(JSON.stringify({
+          action: 'subscribe',
+          matchId: id
+        }));
+        
+        // Subscribe to commentary
+        ws.send(JSON.stringify({
+          action: 'subscribe_commentary',
+          matchId: id
+        }));
+      }
     };
     
-    wsRef.current.onmessage = (event) => {
+    ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'match_update') {
         setMatchData(data.data);
@@ -96,45 +102,33 @@ export default function MatchDetails() {
       }
     };
     
-    wsRef.current.onerror = (error) => {
+    ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       setError('Failed to connect to server. Falling back to API...');
       fetchMatchDataFromAPI();
     };
-    
-    // Fallback to REST API if WebSocket fails
-    const fetchMatchDataFromAPI = async () => {
-      try {
-        const matchResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/matches/${id}`);
-        if (!matchResponse.ok) throw new Error('Failed to fetch match data');
-        const matchData = await matchResponse.json();
-        setMatchData(matchData);
-        
-        const commentaryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/matches/${id}/commentary`);
-        if (commentaryResponse.ok) {
-          const commentaryData = await commentaryResponse.json();
-          setCommentary(commentaryData.commentary || []);
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        setError('Error loading match: ' + err.message);
-        setLoading(false);
-      }
-    };
-    
-    // Clean up WebSocket on unmount
+  } catch (err) {
+    console.error('Error setting up WebSocket:', err);
+    setError('Failed to connect to server. Falling back to API...');
+    fetchMatchDataFromAPI();
+  }
+  
+  // Clean up WebSocket on unmount
   return () => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        action: 'unsubscribe',
-        matchId: id
-      }));
-      wsRef.current.close();
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify({
+          action: 'unsubscribe',
+          matchId: id
+        }));
+      } catch (e) {
+        console.error('Error sending unsubscribe:', e);
+      }
+      ws.close();
     }
   };
 }, [id]);
-
   // Scroll to bottom of commentary when new comments arrive
   useEffect(() => {
     if (activeTab === 'commentary' && commentaryEndRef.current) {
