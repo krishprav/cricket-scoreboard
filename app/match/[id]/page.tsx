@@ -14,14 +14,14 @@ export default function MatchDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const wsRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const commentaryEndRef = useRef(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || typeof window === 'undefined') return;
 
     // Setup WebSocket connection
-    wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}`);
+    wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000'}`);
     
     wsRef.current.onopen = () => {
       console.log('WebSocket connected');
@@ -76,16 +76,12 @@ export default function MatchDetails() {
     };
     
     // Clean up WebSocket on unmount
-    return () => {
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          action: 'unsubscribe',
-          matchId: id
-        }));
-        wsRef.current.close();
-      }
-    };
-  }, [id]);
+  return () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+  };
+}, [id]);
 
   // Scroll to bottom of commentary when new comments arrive
   useEffect(() => {
