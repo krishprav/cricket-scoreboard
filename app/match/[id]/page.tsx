@@ -5,17 +5,65 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+// Define types for your match data
+interface MatchData {
+  series: string;
+  title: string;
+  venue: string;
+  status: string;
+  score?: string;
+  currentPartnership?: string;
+  recentOvers?: string;
+  teams: {
+    team1: string;
+    team2: string;
+  } | string;
+  battingStats?: BattingStats[];
+  bowlingStats?: BowlingStats[];
+  format?: string;
+  squads?: Record<string, string[]>;
+}
+
+interface BattingStats {
+  name: string;
+  team: string;
+  runs: number;
+  balls: number;
+  fours: number;
+  sixes: number;
+  strikeRate: number;
+  status: string;
+}
+
+// Add this interface for bowling stats
+interface BowlingStats {
+  name: string;
+  team: string;
+  overs: number;
+  maidens: number;
+  runs: number;
+  wickets: number;
+  economy: number;
+}
+
+// Define interface for commentary items
+interface CommentaryItem {
+  type?: 'wicket' | 'four' | 'six' | 'regular';
+  over?: string;
+  text: string;
+}
+
 export default function MatchDetails() {
   const params = useParams();
   const router = useRouter();
   const id = params.id;
-  const [matchData, setMatchData] = useState(null);
-  const [commentary, setCommentary] = useState([]);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
+  const [commentary, setCommentary] = useState<CommentaryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const wsRef = useRef<WebSocket | null>(null);
-  const commentaryEndRef = useRef(null);
+  const commentaryEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!id || typeof window === 'undefined') return;
