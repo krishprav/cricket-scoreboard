@@ -1,12 +1,14 @@
-// pages/match/[id].js
+'use client';
+
+// app/match/[id]/page.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function MatchDetails() {
+  const params = useParams();
   const router = useRouter();
-  const { id } = router.query;
+  const id = params.id;
   const [matchData, setMatchData] = useState(null);
   const [commentary, setCommentary] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,9 +108,7 @@ export default function MatchDetails() {
         <div className="bg-red-100 text-red-800 p-4 rounded-lg">
           {error}
           <div className="mt-4">
-            <Link href="/" legacyBehavior>
-              <a className="text-blue-700 hover:underline">← Back to matches</a>
-            </Link>
+            <Link href="/" className="text-blue-700 hover:underline">← Back to matches</Link>
           </div>
         </div>
       </div>
@@ -143,21 +143,12 @@ export default function MatchDetails() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Head>
-        <title>{matchData.title || 'Match Details'} - Cricket Live</title>
-        <meta name="description" content={`Live scores and updates for ${matchData.title}`} />
-      </Head>
-
       <header className="bg-blue-700 text-white shadow-md">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" legacyBehavior>
-              <a className="text-2xl font-bold">Cricket Live</a>
-            </Link>
-            <Link href="/predictor" legacyBehavior>
-              <a className="bg-blue-600 hover:bg-blue-800 px-4 py-2 rounded-lg font-medium">
-                Predict This Match
-              </a>
+            <Link href="/" className="text-2xl font-bold">Cricket Live</Link>
+            <Link href="/predictor" className="bg-blue-600 hover:bg-blue-800 px-4 py-2 rounded-lg font-medium">
+              Predict This Match
             </Link>
           </div>
         </div>
@@ -165,13 +156,11 @@ export default function MatchDetails() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <Link href="/" legacyBehavior>
-            <a className="text-blue-700 hover:underline flex items-center">
-              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd"></path>
-              </svg>
-              Back to matches
-            </a>
+          <Link href="/" className="text-blue-700 hover:underline flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd"></path>
+            </svg>
+            Back to matches
           </Link>
         </div>
 
