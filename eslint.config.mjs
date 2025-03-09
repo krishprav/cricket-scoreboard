@@ -10,6 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
   nextPlugin.configs.recommended,
+  nextPlugin.configs['core-web-vitals'], 
   {
     rules: {
       'react/prop-types': 'off',
