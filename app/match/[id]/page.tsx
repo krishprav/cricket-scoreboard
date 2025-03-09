@@ -125,7 +125,11 @@ export default function MatchDetails() {
     
     // Clean up WebSocket on unmount
   return () => {
-    if (wsRef.current) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        action: 'unsubscribe',
+        matchId: id
+      }));
       wsRef.current.close();
     }
   };
