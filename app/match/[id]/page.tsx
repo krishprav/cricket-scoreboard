@@ -70,9 +70,12 @@ useEffect(() => {
   if (!id || typeof window === 'undefined') return;
 
   try {
-    // Setup WebSocket connection
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com'}/api/match/${id}`);
-    wsRef.current = ws;
+      // First fetch match data from API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://cricket-backend-efj4.onrender.com'}/api/match/${id}`);
+      
+      // After data is fetched, set up WebSocket
+      const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'wss://cricket-backend-efj4.onrender.com'}/ws`);
+      wsRef.current = ws;
     
     ws.onopen = () => {
       console.log('WebSocket connected');
