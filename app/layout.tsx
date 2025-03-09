@@ -57,11 +57,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
 
           <main className="pt-20 pb-12">{children}</main>
-          <footer className="glassmorphic p-4 mt-auto text-center text-gray-200">
-            <p>
-              Views: <span id="viewCount">0</span> | Online: <span id="onlineCount">0</span>
-            </p>
-          </footer>
         </div>
       </body>
     </html>
