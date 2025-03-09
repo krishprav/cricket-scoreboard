@@ -360,7 +360,7 @@ export default function MatchDetails() {
                               </tr>
                             </thead>
                             <tbody>
-                              {matchData.battingStats
+                              {matchData.battingStats && matchData.battingStats
                                 .filter(batsman => batsman.team === team)
                                 .map((batsman, index) => (
                                   <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
