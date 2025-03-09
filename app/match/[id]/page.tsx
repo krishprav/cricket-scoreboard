@@ -399,7 +399,7 @@ export default function MatchDetails() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {matchData.bowlingStats
+                                  {matchData.bowlingStats && matchData.bowlingStats
                                     .filter(bowler => bowler.team === team)
                                     .map((bowler, index) => (
                                       <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
